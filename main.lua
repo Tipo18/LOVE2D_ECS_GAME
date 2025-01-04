@@ -20,9 +20,29 @@ local function renderSystem(entities)
     for _, entity in ipairs(entities) do
         if entity[3] then
             local index = entity[1]
-            print(index)
+            -- print(index)
             love.graphics.rectangle("fill", composants[index][1], composants[index][2], composants[index][3],
                 composants[index][4])
+        end
+    end
+end
+
+local function deplacementSystem(entities)
+    for _, entity in ipairs(entities) do
+        if entity[2] then
+            local index = entity[1]
+            if love.keyboard.isDown("right") then
+                composants[index][1] = composants[index][1] + 10
+            end
+            if love.keyboard.isDown("left") then
+                composants[index][1] = composants[index][1] - 10
+            end
+            if love.keyboard.isDown("up") then
+                composants[index][2] = composants[index][2] - 10
+            end
+            if love.keyboard.isDown("down") then
+                composants[index][2] = composants[index][2] + 10
+            end
         end
     end
 end
@@ -32,15 +52,16 @@ function love.load()
     love.window.setMode(1200, 900, { resizable = false })
     table.insert(entities, { 1, true, true, true, true, true, true })
     table.insert(composants, { 50, 40, 50, 100 })
-    table.insert(entities, { 2, true, true, true, true, true, true })
+    table.insert(entities, { 2, false, true, true, true, true, true })
     table.insert(composants, { 200, 100, 50, 100 })
 end
 
 function love.update()
-    if love.keyboard.isDown("q") then
-        love.event.quit()
-    end
+    deplacementSystem(entities)
+    print("update")
 end
+
+
 
 function love.draw()
     renderSystem(entities)
