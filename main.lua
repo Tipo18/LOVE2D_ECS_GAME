@@ -4,17 +4,16 @@
 local love = require "love"
 
 -- love.load -> love.update -> love.draw
-
 -- Lua est dynamiquement typé et ses tableaux sont flexibles
 
 local world = {
     gamestate = "menu" -- menu / running / paused
 }
 
--- index / joueur / display / xpos / ypos / xsiz / ysiz
+-- index / joueur / display / xpos / ypos / xsiz / ysiz / recttype / blocking / finish door
 local entities = {}
 
--- xpos / ypos / xsiz / ysiz
+-- xpos / ypos / xsiz / ysiz / rect type
 local composants = {}
 
 local systems = {
@@ -25,7 +24,7 @@ local function renderSystem(entities)
         if entity[3] then
             local index = entity[1]
             -- print(index)
-            love.graphics.rectangle("fill", composants[index][1], composants[index][2], composants[index][3],
+            love.graphics.rectangle(composants[index][5], composants[index][1], composants[index][2], composants[index][3],
                 composants[index][4])
         end
     end
@@ -51,17 +50,48 @@ local function deplacementSystem(entities)
     end
 end
 
+
+local function approxCheckCollision(indexe1, indexe2)
+    local distance = math.sqrt((composants[indexe1][1] - composants[indexe2][1])^2 + (composants[indexe1][2] - composants[indexe2][2])^2)
+    if distance < (composants[indexe1][3] + composants[indexe2][3] + composants[indexe1][4] + composants[indexe2][4] ) / 2 then
+        print("Collision detected!")
+        return true
+    else
+        print("colision not detec")
+        return false
+    end
+end
+
+local function collisionSystem(entities)
+    for _, entity in ipairs(entities) do
+        if entity[9] then
+        end
+        if entity[10] then
+            approxCheckCollision(1, entity[1])
+        end
+    end
+end
+
 local function gamestart()
     world.gamestate = "running"
-    table.insert(entities, { 1, true, true, true, true, true, true })
-    table.insert(composants, { 50, 40, 50, 100 })
-    table.insert(entities, { 2, false, true, true, true, true, true })
-    table.insert(composants, { 200, 100, 50, 100 })
+    -- joueur
+    table.insert(entities, { 1, true, true, true, true, true, true, true, false, false })
+    table.insert(composants, { 50, 40, 50, 100, "fill" })
+    -- e2
+    table.insert(entities, { 2, false, true, true, true, true, true, true, true, false })
+    table.insert(composants, { 200, 100, 50, 100, "fill" })
+    -- Début niveau
+    table.insert(entities, { 3, false, true, true, true, true, true, false, false })
+    table.insert(composants, { 0, 0, 50, 100, "line" })
+    -- fin de niveau
+    table.insert(entities, { 4, false, true, true, true, true, true, false, false, true })
+    table.insert(composants, { 500, 500, 50, 100, "line" })
+
 end
 
 function love.load()
     love.window.setTitle("LOVE2D GAME")
-    love.window.setMode(1200, 900, { resizable = false })
+    love.window.setMode(1600, 1000, { resizable = false })
     -- gamestart()
 end
 
@@ -73,8 +103,8 @@ function love.update()
     end
     if world.gamestate == "running" then
         deplacementSystem(entities)
+        collisionSystem(entities)
     end
-    print("update")
 end
 
 function love.draw()
