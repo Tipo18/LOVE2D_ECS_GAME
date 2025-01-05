@@ -10,89 +10,124 @@ local world = {
     gamestate = "menu" -- menu / running / paused
 }
 
--- index / joueur / display / xpos / ypos / xsiz / ysiz / recttype / blocking / finish door
+-- index / joueur / display / xpos / ypos / xsiz / ysiz / recttype / blocking / finish door / lastmove
 local entities = {}
 
--- xpos / ypos / xsiz / ysiz / rect type
-local composants = {}
+-- xpos / ypos / xsiz / ysiz / rect type / lastmove
+local components = {}
 
 local systems = {
 }
 
-local function renderSystem(entities)
+local function renderSystem()
     for _, entity in ipairs(entities) do
-        if entity[3] then
-            local index = entity[1]
-            -- print(index)
-            love.graphics.rectangle(composants[index][5], composants[index][1], composants[index][2], composants[index][3],
-                composants[index][4])
+        if entity.display then
+            local affichage = "fill"
+            if entity.end_door then
+                affichage = "line"
+            end
+            if entity.spawn then
+                affichage = "line"
+            end
+            local index = entity.index
+            love.graphics.rectangle(affichage, components[index].xpos, components[index].ypos,
+                components[index].xsize,
+                components[index].ysize)
         end
     end
 end
 
-local function deplacementSystem(entities)
-    for _, entity in ipairs(entities) do
-        if entity[2] then
-            local index = entity[1]
-            if love.keyboard.isDown("right") then
-                composants[index][1] = composants[index][1] + 10
-            end
-            if love.keyboard.isDown("left") then
-                composants[index][1] = composants[index][1] - 10
-            end
-            if love.keyboard.isDown("up") then
-                composants[index][2] = composants[index][2] - 10
-            end
-            if love.keyboard.isDown("down") then
-                composants[index][2] = composants[index][2] + 10
-            end
-        end
+local function deplacementSystem()
+    -- 1 forcement joueur et que lui qui bouge
+    if love.keyboard.isDown("right") then
+        components[1].xpos = components[1].xpos + 5
+    end
+    if love.keyboard.isDown("left") then
+        components[1].xpos = components[1].xpos - 5
     end
 end
 
 
-local function approxCheckCollision(indexe1, indexe2)
-    local distance = math.sqrt((composants[indexe1][1] - composants[indexe2][1])^2 + (composants[indexe1][2] - composants[indexe2][2])^2)
-    if distance < (composants[indexe1][3] + composants[indexe2][3] + composants[indexe1][4] + composants[indexe2][4] ) / 2 then
-        print("Collision detected!")
-        return true
-    else
-        print("colision not detec")
-        return false
-    end
-end
+-- local function approxCheckCollision(indexe1, indexe2)
+--     local distance = math.sqrt((composants[indexe1][1] - composants[indexe2][1]) ^ 2 +
+--         (composants[indexe1][2] - composants[indexe2][2]) ^ 2)
+--     if distance < (composants[indexe1][3] + composants[indexe2][3] + composants[indexe1][4] + composants[indexe2][4]) / 2 then
+--         return true
+--     else
+--         return false
+--     end
+-- end
 
-local function collisionSystem(entities)
-    for _, entity in ipairs(entities) do
-        if entity[9] then
-        end
-        if entity[10] then
-            approxCheckCollision(1, entity[1])
-        end
-    end
-end
+-- local function trueCheckCollision(index1, index2)
+--     if composants[index1][1] < composants[index2][1] + composants[index2][3] and
+--         composants[index1][1] + composants[index1][3] > composants[index2][1] and
+--         composants[index1][2] < composants[index2][2] + composants[index2][4] and
+--         composants[index1][2] + composants[index1][4] > composants[index2][2] then
+--         return true
+--     else
+--         return false
+--     end
+-- end
+
+-- local function annulLastmvoe()
+--     if composants[1][6] == "x" then
+--         composants[1][1] = composants[1][1] - 5
+--     elseif composants[1][6] == "-x" then
+--         composants[1][1] = composants[1][1] + 5
+--     elseif composants[1][6] == "y" then
+--         composants[1][2] = composants[1][2] + 5
+--     elseif composants[1][6] == "-y" then
+--         composants[1][2] = composants[1][2] - 5
+--     else
+--         print("error joueur lastmove")
+--     end
+-- end
+
+-- local function collisionSystem()
+--     for _, entity in ipairs(entities) do
+--         if entity[9] then
+--             if approxCheckCollision(1, entity[1]) then
+--                 if trueCheckCollision(1, entity[1]) then
+--                     annulLastmvoe()
+--                 end
+--             end
+--         end
+--         if entity[10] then
+--             if approxCheckCollision(1, entity[1]) then
+--                 if trueCheckCollision(1, entity[1]) then
+--                     print("colision porte")
+--                 end
+--             end
+--         end
+--     end
+-- end
+
+-- index / joueur / display / xpos / ypos / xsiz / ysiz / recttype / blocking / finish door / lastmove
+-- -- xpos / ypos / xsiz / ysiz / rect type / lastmove
 
 local function gamestart()
-    world.gamestate = "running"
+    local it_index = 1
     -- joueur
-    table.insert(entities, { 1, true, true, true, true, true, true, true, false, false })
-    table.insert(composants, { 50, 40, 50, 100, "fill" })
-    -- e2
-    table.insert(entities, { 2, false, true, true, true, true, true, true, true, false })
-    table.insert(composants, { 200, 100, 50, 100, "fill" })
-    -- Début niveau
-    table.insert(entities, { 3, false, true, true, true, true, true, false, false })
-    table.insert(composants, { 0, 0, 50, 100, "line" })
-    -- fin de niveau
-    table.insert(entities, { 4, false, true, true, true, true, true, false, false, true })
-    table.insert(composants, { 500, 500, 50, 100, "line" })
-
+    table.insert(entities,
+        { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 20, ypos = 1000 - 40, xsize = 20, ysize = 40 })
+    it_index = it_index + 1
+    -- spawn
+    table.insert(entities,
+        { index = it_index, player = false, spawn = true, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 30, ypos = 1000 - 50, xsize = 30, ysize = 50 })
+    it_index = it_index + 1
+    -- end_door
+    table.insert(entities,
+        { index = it_index, player = false, spawn = false, end_door = true, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 800, ypos = 1000 - 50, xsize = 30, ysize = 50 })
+    it_index = it_index + 1
+    world.gamestate = "running"
 end
 
 function love.load()
     love.window.setTitle("LOVE2D GAME")
-    love.window.setMode(1600, 1000, { resizable = false })
-    -- gamestart()
+    love.window.setMode(1000, 1000, { resizable = false })
 end
 
 function love.update()
@@ -102,8 +137,8 @@ function love.update()
         end
     end
     if world.gamestate == "running" then
-        deplacementSystem(entities)
-        collisionSystem(entities)
+        deplacementSystem()
+        -- collisionSystem()
     end
 end
 
@@ -113,9 +148,9 @@ function love.draw()
         local text = "Press Enter to start"
         local width = love.graphics.getWidth()
         local height = love.graphics.getHeight()
-        love.graphics.print(text, width/2 - love.graphics.getFont():getWidth(text)/2, height*(3/5))
+        love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (3 / 5))
     end
     if world.gamestate == "running" then
-        renderSystem(entities)
+        renderSystem()
     end
 end
