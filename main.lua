@@ -37,13 +37,35 @@ local function renderSystem()
     end
 end
 
-local function deplacementSystem()
+local function deplacementSystem(dt)
     -- 1 forcement joueur et que lui qui bouge
     if love.keyboard.isDown("right") then
-        components[1].xpos = components[1].xpos + 5
+        components[1].xvelocity = 300
     end
     if love.keyboard.isDown("left") then
-        components[1].xpos = components[1].xpos - 5
+        components[1].xvelocity = -300
+    end
+    function love.keypressed(key)
+        if key == "space" and entities[1].onground then
+            print(entities[1].onground)
+            components[1].yvelocity = -500
+            entities[1].onground = false
+        end
+    end
+
+    if entities[1].onground == false then
+        components[1].yvelocity = components[1].yvelocity + 750 * dt
+    end
+
+    -- movement
+    components[1].xpos = components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5)
+    components[1].ypos = components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5)
+    components[1].xvelocity = 0
+
+    if components[1].ypos + components[1].ysize >= 1000 then
+        entities[1].onground = true
+        components[1].yvelocity = 0
+        components[1].ypos = 1000 - components[1].ysize
     end
 end
 
@@ -109,8 +131,9 @@ local function gamestart()
     local it_index = 1
     -- joueur
     table.insert(entities,
-        { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 20, ypos = 1000 - 40, xsize = 20, ysize = 40 })
+        { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xvelocity = true, yvelocity = true, xsize = true, ysize = true, onground = true, })
+    table.insert(components,
+        { xpos = 20, ypos = 1000 - 40, xsize = 20, ysize = 40, xvelocity = 250, yvelocity = 0, isonground = true })
     it_index = it_index + 1
     -- spawn
     table.insert(entities,
@@ -130,14 +153,15 @@ function love.load()
     love.window.setMode(1000, 1000, { resizable = false })
 end
 
-function love.update()
+function love.update(dt)
+    dt = math.min(dt, 0.033)
     if world.gamestate == "menu" then
         if love.keyboard.isDown("return") then
             gamestart()
         end
     end
     if world.gamestate == "running" then
-        deplacementSystem()
+        deplacementSystem(dt)
         -- collisionSystem()
     end
 end
