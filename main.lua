@@ -47,7 +47,6 @@ local function deplacementSystem(dt)
     end
     if love.keyboard.isDown("space") then
         if entities[1].onground or components[1].coyotetimer <= 0.1 then
-            print(components[1].coyotetimer)
             components[1].yvelocity = -700
             entities[1].onground = false
             components[1].coyotetimer = components[1].coyotetimer + 1
@@ -62,11 +61,11 @@ local function deplacementSystem(dt)
                 components[1].xpos + components[1].xsize > components[entity.index].xpos and
                 components[1].ypos < components[entity.index].ypos + components[entity.index].ysize and
                 components[1].ypos + components[1].ysize > components[entity.index].ypos then
-                if components[1].ypos + components[1].ysize <= components[entity.index].ypos + 10 then
-                    print(entity.index)
+                if components[1].ypos + components[1].ysize <= components[entity.index].ypos + 20 then
                     entities[1].onground = true
                     components[1].yvelocity = 0
-                    components[1].ypos = components[entity.index].ypos - components[1].ysize
+                    components[1].ypos = components[
+                    entity.index].ypos - components[1].ysize
                     verif_on_no_plat = verif_on_no_plat + 1
                 end
             end
@@ -78,6 +77,7 @@ local function deplacementSystem(dt)
 
     if entities[1].onground == false then
         components[1].yvelocity = components[1].yvelocity + 1000 * dt
+        components[1].yvelocity = math.min(components[1].yvelocity, 700)
         components[1].coyotetimer = components[1].coyotetimer + dt
     else
         components[1].yvelocity = 0
@@ -172,23 +172,47 @@ local function gamestart()
 
     -- sol
     table.insert(entities,
-        { index = it_index, player = false, spawn = false, end_door = true, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
     table.insert(components, { xpos = 0, ypos = 999, xsize = 1000, ysize = 10 })
     it_index = it_index + 1
 
     -- platforme
     table.insert(entities,
-        { index = it_index, player = false, spawn = false, end_door = true, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 200, ypos = 900, xsize = 80, ysize = 20 })
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 200, ypos = 850, xsize = 80, ysize = 20 })
     it_index = it_index + 1
     table.insert(entities,
-        { index = it_index, player = false, spawn = false, end_door = true, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 300, ypos = 800, xsize = 80, ysize = 20 })
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 300, ypos = 700, xsize = 80, ysize = 20 })
     it_index = it_index + 1
     table.insert(entities,
-        { index = it_index, player = false, spawn = false, end_door = true, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 400, ypos = 700, xsize = 80, ysize = 20 })
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 400, ypos = 550, xsize = 80, ysize = 20 })
     it_index = it_index + 1
+
+    table.insert(entities,
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 500, ypos = 400, xsize = 80, ysize = 20 })
+    it_index = it_index + 1
+
+    table.insert(entities,
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 600, ypos = 250, xsize = 80, ysize = 20 })
+    it_index = it_index + 1
+
+    table.insert(entities,
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 700, ypos = 100, xsize = 80, ysize = 20 })
+    it_index = it_index + 1
+
+    -- wall
+    table.insert(entities,
+        { index = it_index, player = false, spawn = false, end_door = false, platforme = false, wall = true, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 250, ypos = 1000 - 80, xsize = 20, ysize = 80 })
+    it_index = it_index + 1
+
+
+    -- tester que les bout soit a la fois platforme a la fois mur
     -- switching the game state
     world.gamestate = "running"
 end
