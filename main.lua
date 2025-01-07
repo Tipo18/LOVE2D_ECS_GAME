@@ -13,6 +13,8 @@ local frame = 1
 local frametimer = 0
 local walking = false
 
+local time = 0
+
 local entities = {}
 
 local components = {}
@@ -53,8 +55,7 @@ local function renderSystem()
     end
 end
 
-local function deplacementSystem(dt)
-    -- 1 forcement joueur et que lui qui bouge
+local function inputSystem()
     if love.keyboard.isDown("right") then
         components[1].xvelocity = 300
     end
@@ -68,8 +69,10 @@ local function deplacementSystem(dt)
             components[1].coyotetimer = components[1].coyotetimer + 1
         end
     end
+end
 
-    -- switch pour un fonctionnement avec platforme
+-- S de colission complet
+local function platformeCheckSystem()
     local verif_on_no_plat = 0
     for _, entity in ipairs(entities) do
         if entity.platforme then
@@ -89,7 +92,9 @@ local function deplacementSystem(dt)
     if verif_on_no_plat == 0 then
         entities[1].onground = false
     end
+end
 
+local function fallingSystem(dt)
     if entities[1].onground == false then
         components[1].yvelocity = components[1].yvelocity + 1000 * dt
         components[1].yvelocity = math.min(components[1].yvelocity, 700)
@@ -98,7 +103,9 @@ local function deplacementSystem(dt)
         components[1].yvelocity = 0
         components[1].coyotetimer = 0
     end
+end
 
+local function deplacementSystem(dt)
     local block_move = false
     for _, entity in ipairs(entities) do
         if entity.wall then
@@ -123,6 +130,18 @@ local function deplacementSystem(dt)
         components[1].ypos = components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5)
     end
     components[1].xvelocity = 0
+end
+
+local function frameUpdate(dt)
+    frametimer = frametimer + dt
+    if frametimer > 0.1 then
+        if frame == 1 then
+            frame = 2
+        else
+            frame = 1
+        end
+        frametimer = 0
+    end
 end
 
 local function gamestart()
@@ -201,6 +220,23 @@ end
 function love.load()
     love.window.setTitle("LOVE2D GAME")
     love.window.setMode(1000, 1000, { resizable = false })
+    love.graphics.setBackgroundColor(0.5, 0.5, 0.5)
+
+    shader = love.graphics.newShader("shader.glsl")
+
+    -- Load and play background music with error handling
+    success, backgroundMusic = pcall(function()
+        local music = love.audio.newSource("track.wav", "stream")
+        music:setLooping(true)
+        music:setVolume(0.5) -- Set volume to 50%
+        music:play()
+        return music
+    end)
+
+    if not success then
+        print("Failed to load music: " .. tostring(backgroundMusic))
+        backgroundMusic = nil
+    end
 
     player_idle = love.graphics.newImage("sprites/orange/idle.png")
     player_walking = love.graphics.newImage("sprites/orange/walking.png")
@@ -208,26 +244,26 @@ end
 
 function love.update(dt)
     dt = math.min(dt, 0.033)
+    time = time + dt
+    shader:send("time", time)
     if world.gamestate == "menu" then
         if love.keyboard.isDown("return") then
             gamestart()
         end
     end
     if world.gamestate == "running" then
+        inputSystem()
+        platformeCheckSystem()
+        fallingSystem(dt)
         deplacementSystem(dt)
-        frametimer = frametimer + dt
-        if frametimer > 0.1 then
-            if frame == 1 then
-                frame = 2
-            else
-                frame = 1
-            end
-            frametimer = 0
-        end
+        frameUpdate(dt)
     end
 end
 
 function love.draw()
+    love.graphics.setShader(shader)
+    love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+    love.graphics.setShader()
     if world.gamestate == "menu" then
         love.graphics.setNewFont(30)
         local text = "Press Enter to start"
