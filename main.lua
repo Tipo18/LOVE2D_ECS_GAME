@@ -72,6 +72,56 @@ local function inputSystem()
 end
 
 -- S de colission complet
+local function collisionPlatformSystem(dt)
+    local block_move = false
+    for _, entity in ipairs(entities) do
+        if entity.wall then
+            if components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5) < components[entity.index].xpos + components[entity.index].xsize and
+                components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5) + components[1].xsize > components[entity.index].xpos and
+                components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5) < components[entity.index].ypos + components[entity.index].ysize and
+                components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5) + components[1].ysize > components[entity.index].ypos then
+                block_move = true
+                -- Calculate the overlap (penetration depth) on the X axis
+                local overlapX1 = (components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5) + components[1].xsize) -
+                    components[entity.index].xpos
+                local overlapX2 = (components[entity.index].xpos + components[entity.index].xsize) -
+                    (components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5))
+
+                -- Take the smaller positive overlap value (to resolve in the correct direction)
+                local penetrationX = math.min(overlapX1, overlapX2)
+
+                -- Calculate the overlap (penetration depth) on the Y axis
+                local overlapY1 = (components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5) + components[1].ysize) -
+                    components[entity.index].ypos
+                local overlapY2 = (components[entity.index].ypos + components[entity.index].ysize) -
+                    (components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5))
+
+                -- Take the smaller positive overlap value (to resolve in the correct direction)
+                local penetrationY = math.min(overlapY1, overlapY2)
+                if penetrationX < penetrationY then
+                    -- Resolve X-axis collision
+                    components[1].xvelocity = 0                                                  -- Stop horizontal movement
+                    if overlapX1 < overlapX2 then
+                        components[1].xpos = components[entity.index].xpos - components[1].xsize -- Push left
+                    else
+                        components[1].xpos = components[entity.index].xpos + components[entity.index]
+                            .xsize -- Push right
+                    end
+                else
+                    components[1].yvelocity = 0 -- Stop vertical movement
+                    -- Resolve Y-axis collision
+                    if overlapY1 < overlapY2 then
+                        components[1].ypos = components[entity.index].ypos - components[1].ysize            -- Push up
+                    else
+                        components[1].ypos = components[entity.index].ypos + components[entity.index].ysize -- Push down
+                    end
+                end
+            end
+        end
+    end
+end
+
+
 local function platformeCheckSystem()
     local verif_on_no_plat = 0
     for _, entity in ipairs(entities) do
@@ -106,14 +156,43 @@ local function fallingSystem(dt)
 end
 
 local function deplacementSystem(dt)
-    local block_move = false
+    local block_xmove = false
+    local block_ymove = false
     for _, entity in ipairs(entities) do
         if entity.wall then
             if components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5) < components[entity.index].xpos + components[entity.index].xsize and
                 components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5) + components[1].xsize > components[entity.index].xpos and
                 components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5) < components[entity.index].ypos + components[entity.index].ysize and
                 components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5) + components[1].ysize > components[entity.index].ypos then
-                block_move = true
+                local overlapX1 = (components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5) + components[1].xsize) -
+                    components[entity.index].xpos
+                local overlapX2 = (components[entity.index].xpos + components[entity.index].xsize) -
+                    (components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5))
+                local penetrationX = math.min(overlapX1, overlapX2)
+
+                local overlapY1 = (components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5) + components[1].ysize) -
+                    components[entity.index].ypos
+                local overlapY2 = (components[entity.index].ypos + components[entity.index].ysize) -
+                    (components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5))
+
+                local penetrationY = math.min(overlapY1, overlapY2)
+                if penetrationX < penetrationY then
+                    components[1].xvelocity = 0
+                    block_xmove = true
+                    if overlapX1 < overlapX2 then
+                        components[1].xpos = components[entity.index].xpos - components[1].xsize
+                    else
+                        components[1].xpos = components[entity.index].xpos + components[entity.index].xsize
+                    end
+                else
+                    components[1].yvelocity = 0
+                    block_ymove = true
+                    if overlapY1 < overlapY2 then
+                        components[1].ypos = components[entity.index].ypos - components[1].ysize            -- Push up
+                    else
+                        components[1].ypos = components[entity.index].ypos + components[entity.index].ysize -- Push down
+                    end
+                end
             end
         end
     end
@@ -124,12 +203,13 @@ local function deplacementSystem(dt)
         walking = false
     end
 
-    -- movement
-    if not block_move then
+    if not block_xmove then
         components[1].xpos = components[1].xpos + math.floor(components[1].xvelocity * dt + 0.5)
+        components[1].xvelocity = 0
+    end
+    if not block_ymove then
         components[1].ypos = components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5)
     end
-    components[1].xvelocity = 0
 end
 
 local function frameUpdate(dt)
@@ -222,14 +302,13 @@ function love.load()
     love.window.setMode(1000, 1000, { resizable = false })
     love.graphics.setBackgroundColor(0.5, 0.5, 0.5)
 
-    shader = love.graphics.newShader("shader.glsl")
+    shader = love.graphics.newShader("assets/shaders/shader.glsl")
 
-    -- Load and play background music with error handling
     success, backgroundMusic = pcall(function()
-        local music = love.audio.newSource("track.wav", "stream")
-        music:setLooping(true)
-        music:setVolume(0.5) -- Set volume to 50%
-        music:play()
+        local music = love.audio.newSource("assets/musics/track.wav", "stream")
+        -- music:setLooping(true)
+        -- music:setVolume(0.5)
+        -- music:play()
         return music
     end)
 
@@ -238,8 +317,8 @@ function love.load()
         backgroundMusic = nil
     end
 
-    player_idle = love.graphics.newImage("sprites/orange/idle.png")
-    player_walking = love.graphics.newImage("sprites/orange/walking.png")
+    player_idle = love.graphics.newImage("assets/sprites/orange/idle.png")
+    player_walking = love.graphics.newImage("assets/sprites/orange/walking.png")
 end
 
 function love.update(dt)
@@ -261,9 +340,9 @@ function love.update(dt)
 end
 
 function love.draw()
-    love.graphics.setShader(shader)
-    love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
-    love.graphics.setShader()
+    -- love.graphics.setShader(shader)
+    -- love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+    -- love.graphics.setShader()
     if world.gamestate == "menu" then
         love.graphics.setNewFont(30)
         local text = "Press Enter to start"
@@ -275,3 +354,14 @@ function love.draw()
         renderSystem()
     end
 end
+
+-- systeme de colision et plateforme
+
+-- ecran titre
+-- faire une intro ecrite
+-- niveau aléatoire intéressants
+-- faire un menu pause
+--
+-- fin ecrite ou scenete
+-- transition entre les niveaux
+-- definition du nombre de niveau à faire pour finir
