@@ -2,23 +2,46 @@
 -- Trying to create a ECS system from scratch in love2D
 -- love.load -> love.update -> love.draw
 
-
 local love = require "love"
 
-local world = {
-    game_state = "menu", -- menu / intro / running / paused / end
-    level = 0,
-    frame = 1,
-    frame_timer = 0,
-    shader_time = 0,
-    swictch_screen_delay = 0,
-}
+function load_music()
+    local success, backgroundMusic = pcall(function()
+        local music = love.audio.newSource("assets/musics/track.wav", "stream")
+        music:setLooping(true)
+        music:setVolume(0.5)
+        music:play()
+        return music
+    end)
+    if not success then
+        print("Failed to load music: " .. tostring(backgroundMusic))
+        backgroundMusic = nil
+    end
+end
 
-local walking = false
-local entities = {}
-local components = {}
-local systems = {
-}
+function love.load()
+    love.window.setTitle("LOVE2D GAME")
+    love.window.setMode(1000, 1000, { resizable = false })
+    regularTexte = love.graphics.setNewFont("assets/fonts/PixelifySans-Regular.ttf", 40)
+    tittleTexte = love.graphics.setNewFont("assets/fonts/PixelifySans-Bold.ttf", 100)
+    shader = love.graphics.newShader("assets/shaders/shader.glsl")
+    load_music()
+    player_idle = love.graphics.newImage("assets/sprites/orange/idle.png")
+    player_walking = love.graphics.newImage("assets/sprites/orange/walking.png")
+
+    world = {
+        game_state = "menu", -- menu / intro / running / transition / paused / end
+        level = -0,
+        frame = 1,
+        frame_timer = 0,
+        shader_time = 0,
+        swictch_screen_delay = 0,
+    }
+
+    walking = false
+    entities = {}
+    components = {}
+    systems = {}
+end
 
 local function walking_sprite_animation()
     if walking then
@@ -49,7 +72,12 @@ local function renderSystem()
     end
 end
 
-local function gamestart()
+local function start_level()
+    world.level = world.level + 1
+    for _, entity in ipairs(entities) do
+        entity.display = false
+    end
+    world.game_state = "transition"
     local it_index = 1
     -- joueur
     table.insert(entities,
@@ -68,48 +96,25 @@ local function gamestart()
     table.insert(components, { xpos = 20 + 140 * 6 + 120 / 2 - 68 / 2, ypos = 1000 - 20 - 80, xsize = 68, ysize = 80 })
     it_index = it_index + 1
 
-    -- platforme
-    -- local plateforme =
-    -- {
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 }
-    -- }
-    -- local wall =
-    -- {
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 },
-    --     { 1, 1, 1, 1, 1, 1, 1, 1 }
-    -- }
     local plateforme =
     {
         { 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 1, 1, 1, 0, 0 },
+        { 0, 0, 0, 1, 1, 0, 0 },
+        { 0, 1, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0 },
         { 1, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 1 },
         { 0, 0, 1, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0 },
-        { 1, 1, 0, 0, 0, 1, 1 }
+        { 1, 1, 1, 0, 0, 1, 1 }
     }
     local wall =
     {
         { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 1, 0, 0, 0 },
-        { 0, 0, 0, 0, 1, 0, 0, 0 },
-        { 0, 0, 0, 0, 1, 0, 0, 0 },
-        { 1, 0, 0, 0, 1, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 1 },
         { 1, 0, 0, 0, 1, 0, 0, 1 },
     }
     for i = 1, 8 do
@@ -130,45 +135,21 @@ local function gamestart()
             end
         end
     end
+    for _, entity in ipairs(entities) do
+        if entity.display == false then
+            table.remove(entities, entity.index)
+        end
+    end
+    components[1].xpos = 20
     world.game_state = "running"
-end
-
-local function inputSystem()
-    if love.keyboard.isDown("return") then
-        if world.game_state == "menu" then
-            world.game_state = "intro"
-            world.swictch_screen_delay = 0
-        elseif world.game_state == "intro" and world.swictch_screen_delay > 0.3 then
-            gamestart()
-        end
-    end
-
-    if love.keyboard.isDown("p") then
-        if world.game_state == "running" and world.swictch_screen_delay > 0.3 then
-            world.game_state = "paused"
-            world.swictch_screen_delay = 0
-        elseif world.game_state == "paused" and world.swictch_screen_delay > 0.3 then
-            world.game_state = "running"
-            world.swictch_screen_delay = 0
-        end
-    end
-
-    if love.keyboard.isDown("right") then
-        components[1].xvelocity = 300
-    end
-    if love.keyboard.isDown("left") then
-        components[1].xvelocity = -300
-    end
-    if love.keyboard.isDown("space") then
-        if entities[1].onground or components[1].coyotetimer <= 0.1 then
-            components[1].yvelocity = -800
-            entities[1].onground = false
-            components[1].coyotetimer = components[1].coyotetimer + 1
-        end
-    end
+    world.level = world.level + 1
 end
 
 local function collisionPlatformDeplacementSysteme(dt)
+    if not components[20] or not components[1].xvelocity or not components[1].yvelocity then
+        return -- Skip processing if the player component is invalid
+    end
+
     local block_xmove = false
     local block_ymove = false
 
@@ -224,16 +205,19 @@ local function collisionPlatformDeplacementSysteme(dt)
                     components[1].xpos = components[entity.index].xpos + 2
                     components[1].ypos = components[entity.index].ypos + 80 - 64
                     -- transition
-                    world.game_state = "end"
                     -- switch screen delay not fully working
                     world.swictch_screen_delay = 0
+                    if world.level == 3 then
+                        world.game_state = "end"
+                    else
+                        print(world.level)
+                        world.game_state = "transition"
+                    end
                 end
             end
         end
     end
-
     walking = components[1].xvelocity ~= 0
-
     local verif_plat = 0
     if not block_xmove and not block_ymove then
         for _, entity in ipairs(entities) do
@@ -255,7 +239,7 @@ local function collisionPlatformDeplacementSysteme(dt)
     entities[1].onground = verif_plat ~= 0
 
     if entities[1].onground == false then
-        components[1].yvelocity = components[1].yvelocity + 1000 * dt
+        components[1].yvelocity = components[1].yvelocity + 1050 * dt
         components[1].yvelocity = math.min(components[1].yvelocity, 700)
         components[1].coyotetimer = components[1].coyotetimer + dt
     else
@@ -272,6 +256,7 @@ local function collisionPlatformDeplacementSysteme(dt)
     end
 end
 
+
 local function frameUpdate(dt)
     world.frame_timer = world.frame_timer + dt
     if world.frame_timer > 0.1 then
@@ -284,33 +269,41 @@ local function frameUpdate(dt)
     end
 end
 
-
-
-function love.load()
-    love.window.setTitle("LOVE2D GAME")
-    love.window.setMode(1000, 1000, { resizable = false })
-    love.graphics.setBackgroundColor(0.5, 0.5, 0.5)
-
-    regularTexte = love.graphics.setNewFont("assets/fonts/PixelifySans-Regular.ttf", 40)
-    tittleTexte = love.graphics.setNewFont("assets/fonts/PixelifySans-Bold.ttf", 100)
-
-    shader = love.graphics.newShader("assets/shaders/shader.glsl")
-
-    success, backgroundMusic = pcall(function()
-        local music = love.audio.newSource("assets/musics/track.wav", "stream")
-        music:setLooping(true)
-        music:setVolume(0.5)
-        music:play()
-        return music
-    end)
-
-    if not success then
-        print("Failed to load music: " .. tostring(backgroundMusic))
-        backgroundMusic = nil
+local function inputSystem()
+    if love.keyboard.isDown("return") then
+        if world.game_state == "menu" then
+            world.game_state = "intro"
+            world.swictch_screen_delay = 0
+        elseif world.game_state == "intro" and world.swictch_screen_delay > 0.3 then
+            start_level()
+        end
     end
 
-    player_idle = love.graphics.newImage("assets/sprites/orange/idle.png")
-    player_walking = love.graphics.newImage("assets/sprites/orange/walking.png")
+    if love.keyboard.isDown("p") then
+        if world.game_state == "running" and world.swictch_screen_delay > 0.3 then
+            world.game_state = "paused"
+            world.swictch_screen_delay = 0
+        elseif world.game_state == "paused" and world.swictch_screen_delay > 0.3 then
+            world.game_state = "running"
+            world.swictch_screen_delay = 0
+        end
+    end
+
+    if world.game_state == "running" then
+        if love.keyboard.isDown("right") then
+            components[1].xvelocity = 300
+        end
+        if love.keyboard.isDown("left") then
+            components[1].xvelocity = -300
+        end
+        if love.keyboard.isDown("space") then
+            if entities[1].onground or components[1].coyotetimer <= 0.1 then
+                components[1].yvelocity = -775
+                entities[1].onground = false
+                components[1].coyotetimer = components[1].coyotetimer + 1
+            end
+        end
+    end
 end
 
 function love.update(dt)
@@ -318,20 +311,22 @@ function love.update(dt)
     world.shader_time = world.shader_time + dt
     shader:send("time", world.shader_time)
     world.swictch_screen_delay = world.swictch_screen_delay + dt
-
     inputSystem()
     if world.game_state == "running" then
         collisionPlatformDeplacementSysteme(dt)
         frameUpdate(dt)
     end
+    if world.game_state == "transition" then
+        start_level()
+    end
 end
 
 function love.draw()
-    love.graphics.setShader(shader)
-    love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
-    love.graphics.setShader()
     local width = love.graphics.getWidth()
     local height = love.graphics.getHeight()
+    love.graphics.setShader(shader)
+    love.graphics.rectangle("fill", 0, 0, width, height)
+    love.graphics.setShader()
     if world.game_state == "menu" then
         local text = "Press Enter to start"
         love.graphics.setFont(regularTexte)
@@ -379,6 +374,13 @@ end
 
 -- détection de la fin du niveau
 --
--- ajustement des sppe
+-- ajustement des sp
 
 -- si tu sors de l'écran resset au début du niveau
+
+
+-- i tried shader transition but failled
+
+
+-- plusieur niveau
+-- si sortie de l'écran retour spawn
