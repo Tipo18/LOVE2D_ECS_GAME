@@ -74,10 +74,15 @@ end
 
 local function start_level()
     world.level = world.level + 1
-    for _, entity in ipairs(entities) do
-        entity.display = false
-    end
+    -- for _, entity in ipairs(entities) do
+    --     entity.display = false
+    -- end
     world.game_state = "transition"
+    for _, entity in ipairs(entities) do
+        if entity.display == false then
+            table.remove(entities, entity.index)
+        end
+    end
     local it_index = 1
     -- joueur
     table.insert(entities,
@@ -135,19 +140,24 @@ local function start_level()
             end
         end
     end
-    for _, entity in ipairs(entities) do
-        if entity.display == false then
-            table.remove(entities, entity.index)
-        end
-    end
+    -- for _, entity in ipairs(entities) do
+    --     if entity.display == false then
+    --         table.remove(entities, entity.index)
+    --     end
+    -- end
     components[1].xpos = 20
     world.game_state = "running"
-    world.level = world.level + 1
+    world.swictch_screen_delay = 0
 end
 
 local function collisionPlatformDeplacementSysteme(dt)
     if not components[20] or not components[1].xvelocity or not components[1].yvelocity then
         return -- Skip processing if the player component is invalid
+    end
+
+    local grav = 1050
+    if components[1].yvelocity <= 0 then
+        grav = grav * 2
     end
 
     local block_xmove = false
@@ -239,8 +249,8 @@ local function collisionPlatformDeplacementSysteme(dt)
     entities[1].onground = verif_plat ~= 0
 
     if entities[1].onground == false then
-        components[1].yvelocity = components[1].yvelocity + 1050 * dt
-        components[1].yvelocity = math.min(components[1].yvelocity, 700)
+        components[1].yvelocity = components[1].yvelocity + grav * dt
+        components[1].yvelocity = math.min(components[1].yvelocity, 1400)
         components[1].coyotetimer = components[1].coyotetimer + dt
     else
         components[1].yvelocity = 0
@@ -298,7 +308,7 @@ local function inputSystem()
         end
         if love.keyboard.isDown("space") then
             if entities[1].onground or components[1].coyotetimer <= 0.1 then
-                components[1].yvelocity = -775
+                components[1].yvelocity = -1100
                 entities[1].onground = false
                 components[1].coyotetimer = components[1].coyotetimer + 1
             end
@@ -341,7 +351,9 @@ function love.draw()
         love.graphics.printf(text, 80, 400, 900, 'left')
         -- love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (1 / 5))
     elseif world.game_state == "running" then
-        renderSystem()
+        if world.swictch_screen_delay > 0 then
+            renderSystem()
+        end
     elseif world.game_state == "paused" then
         print("paused")
         local text = "Press P to resume"
