@@ -7,6 +7,7 @@ local love = require "love"
 
 local world = {
     game_state = "menu", -- menu / intro / running / paused / end
+    level = 0,
     frame = 1,
     frame_timer = 0,
     shader_time = 0,
@@ -59,12 +60,12 @@ local function gamestart()
     -- spawn
     table.insert(entities,
         { index = it_index, player = false, spawn = true, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 30, ypos = 1000 - 50, xsize = 30, ysize = 50 })
+    table.insert(components, { xpos = 20 + 120 / 2 - 68 / 2, ypos = 1000 - 20 - 80, xsize = 68, ysize = 80 })
     it_index = it_index + 1
     -- end_door
     table.insert(entities,
         { index = it_index, player = false, spawn = false, end_door = true, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 800, ypos = 1000 - 50, xsize = 30, ysize = 50 })
+    table.insert(components, { xpos = 20 + 140 * 6 + 120 / 2 - 68 / 2, ypos = 1000 - 20 - 80, xsize = 68, ysize = 80 })
     it_index = it_index + 1
 
     -- platforme
@@ -175,35 +176,57 @@ local function collisionPlatformDeplacementSysteme(dt)
     local next_ypos = components[1].ypos + math.floor(components[1].yvelocity * dt + 0.5)
 
     for _, entity in ipairs(entities) do
-        if entity.wall then
-            if next_xpos < components[entity.index].xpos + components[entity.index].xsize and
-                next_xpos + components[1].xsize > components[entity.index].xpos and
-                next_ypos < components[entity.index].ypos + components[entity.index].ysize and
-                next_ypos + components[1].ysize > components[entity.index].ypos then
-                local overlapX1 = (next_xpos + components[1].xsize) - components[entity.index].xpos
-                local overlapX2 = (components[entity.index].xpos + components[entity.index].xsize) - next_xpos
-                local penetrationX = math.min(overlapX1, overlapX2)
+        if entity.wall or entity.end_door then
+            if entity.wall then
+                if next_xpos < components[entity.index].xpos + components[entity.index].xsize and
+                    next_xpos + components[1].xsize > components[entity.index].xpos and
+                    next_ypos < components[entity.index].ypos + components[entity.index].ysize and
+                    next_ypos + components[1].ysize > components[entity.index].ypos then
+                    local overlapX1 = (next_xpos + components[1].xsize) - components[entity.index].xpos
+                    local overlapX2 = (components[entity.index].xpos + components[entity.index].xsize) - next_xpos
+                    local penetrationX = math.min(overlapX1, overlapX2)
 
-                local overlapY1 = (next_ypos + components[1].ysize) - components[entity.index].ypos
-                local overlapY2 = (components[entity.index].ypos + components[entity.index].ysize) - next_ypos
-                local penetrationY = math.min(overlapY1, overlapY2)
+                    local overlapY1 = (next_ypos + components[1].ysize) - components[entity.index].ypos
+                    local overlapY2 = (components[entity.index].ypos + components[entity.index].ysize) - next_ypos
+                    local penetrationY = math.min(overlapY1, overlapY2)
 
-                if penetrationX < penetrationY then
+                    if penetrationX < penetrationY then
+                        components[1].xvelocity = 0
+                        block_xmove = true
+                        if overlapX1 < overlapX2 then
+                            components[1].xpos = components[entity.index].xpos - components[1].xsize
+                        else
+                            components[1].xpos = components[entity.index].xpos + components[entity.index].xsize
+                        end
+                    else
+                        components[1].yvelocity = 0
+                        block_ymove = true
+                        if overlapY1 < overlapY2 then
+                            components[1].ypos = components[entity.index].ypos -
+                                components[1]
+                                .ysize
+                        else
+                            components[1].ypos = components[entity.index].ypos +
+                                components[entity.index]
+                                .ysize
+                        end
+                    end
+                end
+            else
+                if next_xpos < components[entity.index].xpos + components[entity.index].xsize - 30 and
+                    next_xpos + components[1].xsize > components[entity.index].xpos + 30 and
+                    next_ypos < components[entity.index].ypos + components[entity.index].ysize - 30 and
+                    next_ypos + components[1].ysize > components[entity.index].ypos + 30 then
                     components[1].xvelocity = 0
                     block_xmove = true
-                    if overlapX1 < overlapX2 then
-                        components[1].xpos = components[entity.index].xpos - components[1].xsize
-                    else
-                        components[1].xpos = components[entity.index].xpos + components[entity.index].xsize
-                    end
-                else
-                    components[1].yvelocity = 0
-                    block_ymove = true
-                    if overlapY1 < overlapY2 then
-                        components[1].ypos = components[entity.index].ypos - components[1].ysize            -- Push up
-                    else
-                        components[1].ypos = components[entity.index].ypos + components[entity.index].ysize -- Push down
-                    end
+                    components[1].xvelocity = 0
+                    block_xmove = true
+                    components[1].xpos = components[entity.index].xpos + 2
+                    components[1].ypos = components[entity.index].ypos + 80 - 64
+                    -- transition
+                    world.game_state = "end"
+                    -- switch screen delay not fully working
+                    world.swictch_screen_delay = 0
                 end
             end
         end
@@ -334,7 +357,11 @@ function love.draw()
         text = "Pause"
         love.graphics.setFont(tittleTexte)
         love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (2 / 5))
-    elseif world.game_state == "end" then
+    elseif world.game_state == "end" and world.swictch_screen_delay > 0.3 then
+        local text = "well done you finaly reach the rest room you now can truly enjoy your break"
+        love.graphics.setFont(regularTexte)
+        love.graphics.printf(text, 80, 400, 900, 'left')
+        -- love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (1 / 5))
     end
 end
 
