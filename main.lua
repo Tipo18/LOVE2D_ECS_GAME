@@ -41,6 +41,9 @@ function love.load()
     entities = {}
     components = {}
     systems = {}
+
+    startx = 0
+    starty = O
 end
 
 local function walking_sprite_animation()
@@ -72,23 +75,15 @@ local function renderSystem()
     end
 end
 
-local function start_level()
-    world.level = world.level + 1
-    -- for _, entity in ipairs(entities) do
-    --     entity.display = false
-    -- end
-    world.game_state = "transition"
-    for _, entity in ipairs(entities) do
-        if entity.display == false then
-            table.remove(entities, entity.index)
-        end
-    end
+local function init1()
     local it_index = 1
     -- joueur
     table.insert(entities,
         { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xvelocity = true, yvelocity = true, xsize = true, ysize = true, onground = true, coyotetimer = true, })
     table.insert(components,
-        { xpos = 20, ypos = 1000 - 64, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
+        { xpos = 20 + 120 / 2 - 68 / 2 -4, ypos = 1000 - 64, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
+    startx = 20 + 120 / 2 - 68 / 2 -4
+    starty = 1000 - 64
     it_index = it_index + 1
     -- spawn
     table.insert(entities,
@@ -110,7 +105,7 @@ local function start_level()
         { 1, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 1 },
         { 0, 0, 1, 0, 0, 0, 0 },
-        { 1, 1, 1, 0, 0, 1, 1 }
+        { 1, 1, 1, 1, 1, 1, 1 }
     }
     local wall =
     {
@@ -118,8 +113,8 @@ local function start_level()
         { 0, 0, 0, 0, 1, 0, 0, 0 },
         { 0, 0, 0, 0, 1, 0, 0, 0 },
         { 0, 0, 0, 0, 1, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 1, 0, 0, 0, 0, 0, 0, 1 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 1, 0, 0, 0, 1, 0, 0, 1 },
         { 1, 0, 0, 0, 1, 0, 0, 1 },
     }
     for i = 1, 8 do
@@ -140,19 +135,155 @@ local function start_level()
             end
         end
     end
-    -- for _, entity in ipairs(entities) do
-    --     if entity.display == false then
-    --         table.remove(entities, entity.index)
-    --     end
-    -- end
-    components[1].xpos = 20
+end
+
+local function init2()
+    local it_index = 1
+    -- joueur
+    table.insert(entities,
+        { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xvelocity = true, yvelocity = true, xsize = true, ysize = true, onground = true, coyotetimer = true, })
+    table.insert(components,
+        { xpos = 20 + 120 / 2 - 68 / 2 -4, ypos = (3 - 1) * (120 + 20) - 64, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
+    startx = 20 + 120 / 2 - 68 / 2 -4
+    starty = (3 - 1) * (120 + 20) - 64
+    it_index = it_index + 1
+    -- spawn
+    table.insert(entities,
+        { index = it_index, player = false, spawn = true, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 20 + 120 / 2 - 68 / 2, ypos = (3 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
+    it_index = it_index + 1
+    -- end_door
+    table.insert(entities,
+        { index = it_index, player = false, spawn = false, end_door = true, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 20 + 140 * 6 + 120 / 2 - 68 / 2, ypos = (6 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
+    it_index = it_index + 1
+
+    local plateforme =
+    {
+        { 0, 0, 0, 1, 0, 0, 0 },
+        { 1, 0, 0, 0, 1, 0, 0 },
+        { 1, 1, 1, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 1 },
+        { 0, 1, 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 1, 0, 0, 0 }
+    }
+    local wall =
+    {
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 1, 0, 0, 0, 0, 1, 0, 0 },
+        { 0, 0, 0, 0, 0, 1, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 0, 1, 0, 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+    }
+    for i = 1, 8 do
+        for j = 1, 7 do
+            if plateforme[i][j] == 1 then
+                table.insert(entities,
+                    { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = true, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+                table.insert(components,
+                    { xpos = 20 + (120 + 20) * (j - 1), ypos = (i - 1) * (120 + 20), xsize = 120, ysize = 20 })
+                it_index = it_index + 1
+            end
+            if wall[j][i] == 1 then
+                table.insert(entities,
+                    { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = true, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+                table.insert(components,
+                    { xpos = (i - 1) * (120 + 20), ypos = 20 + (120 + 20) * (j - 1), xsize = 20, ysize = 120 })
+                it_index = it_index + 1
+            end
+        end
+    end
+end
+
+local function init3()
+    local it_index = 1
+    -- joueur
+    table.insert(entities,
+        { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xvelocity = true, yvelocity = true, xsize = true, ysize = true, onground = true, coyotetimer = true, })
+    table.insert(components,
+        { xpos = 20 + (120 + 20) * 6 + 120 / 2 - 68 / 2 - 4, ypos = (8 - 1) * (120 + 20) - 100, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
+    startx = 20 + (120 + 20) * 6 + 120 / 2 - 68 / 2 - 4
+    starty = (8 - 1) * (120 + 20) - 100
+    it_index = it_index + 1
+    -- spawn
+    table.insert(entities,
+        { index = it_index, player = false, spawn = true, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 20 + (140) * 6 + 120 / 2 - 68 / 2, ypos = (8 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
+    it_index = it_index + 1
+    -- end_door
+    table.insert(entities,
+        { index = it_index, player = false, spawn = false, end_door = true, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+    table.insert(components, { xpos = 20 + 140 * 5 + 120 / 2 - 68 / 2, ypos = (2 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
+    it_index = it_index + 1
+
+    local plateforme =
+    {
+        { 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 1 }
+    }
+    local wall =
+    {
+        { 0, 0, 0, 0, 0, 0, 1, 0 },
+        { 0, 0, 1, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 1, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 0, 0, 1, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 1 },
+    }
+    for i = 1, 8 do
+        for j = 1, 7 do
+            if plateforme[i][j] == 1 then
+                table.insert(entities,
+                    { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = true, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+                table.insert(components,
+                    { xpos = 20 + (120 + 20) * (j - 1), ypos = (i - 1) * (120 + 20), xsize = 120, ysize = 20 })
+                it_index = it_index + 1
+            end
+            if wall[j][i] == 1 then
+                table.insert(entities,
+                    { index = it_index, player = false, spawn = false, end_door = false, platforme = true, wall = true, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
+                table.insert(components,
+                    { xpos = (i - 1) * (120 + 20), ypos = 20 + (120 + 20) * (j - 1), xsize = 20, ysize = 120 })
+                it_index = it_index + 1
+            end
+        end
+    end
+end
+
+local function start_level()
+    world.level = world.level + 1
+    entities = {}
+    components = {}
+    if world.level == 1 then
+        init1()
+    elseif world.level == 2 then
+        init2()
+    elseif world.level == 3 then
+        init3()
+    end
     world.game_state = "running"
     world.swictch_screen_delay = 0
 end
 
 local function collisionPlatformDeplacementSysteme(dt)
-    if not components[20] or not components[1].xvelocity or not components[1].yvelocity then
+    if not components[10] or not components[1].xvelocity or not components[1].yvelocity then
         return -- Skip processing if the player component is invalid
+    end
+
+    if components[1].ypos > 1000 then
+        components[1].xpos = startx
+        components[1].ypos = starty
     end
 
     local grav = 1050
@@ -220,8 +351,9 @@ local function collisionPlatformDeplacementSysteme(dt)
                     if world.level == 3 then
                         world.game_state = "end"
                     else
-                        print(world.level)
                         world.game_state = "transition"
+                        start_level()
+                        return
                     end
                 end
             end
@@ -266,7 +398,6 @@ local function collisionPlatformDeplacementSysteme(dt)
     end
 end
 
-
 local function frameUpdate(dt)
     world.frame_timer = world.frame_timer + dt
     if world.frame_timer > 0.1 then
@@ -284,16 +415,16 @@ local function inputSystem()
         if world.game_state == "menu" then
             world.game_state = "intro"
             world.swictch_screen_delay = 0
-        elseif world.game_state == "intro" and world.swictch_screen_delay > 0.3 then
+        elseif world.game_state == "intro" and world.swictch_screen_delay > 0.2 then
             start_level()
         end
     end
 
     if love.keyboard.isDown("p") then
-        if world.game_state == "running" and world.swictch_screen_delay > 0.3 then
+        if world.game_state == "running" and world.swictch_screen_delay > 0.2 then
             world.game_state = "paused"
             world.swictch_screen_delay = 0
-        elseif world.game_state == "paused" and world.swictch_screen_delay > 0.3 then
+        elseif world.game_state == "paused" and world.swictch_screen_delay > 0.2 then
             world.game_state = "running"
             world.swictch_screen_delay = 0
         end
@@ -321,13 +452,12 @@ function love.update(dt)
     world.shader_time = world.shader_time + dt
     shader:send("time", world.shader_time)
     world.swictch_screen_delay = world.swictch_screen_delay + dt
-    inputSystem()
-    if world.game_state == "running" then
-        collisionPlatformDeplacementSysteme(dt)
-        frameUpdate(dt)
-    end
-    if world.game_state == "transition" then
-        start_level()
+    if not (world.game_state == "transition") then
+        inputSystem()
+        if world.game_state == "running" and world.swictch_screen_delay >= 0 then
+            collisionPlatformDeplacementSysteme(dt)
+            frameUpdate(dt)
+        end
     end
 end
 
@@ -338,7 +468,7 @@ function love.draw()
     love.graphics.rectangle("fill", 0, 0, width, height)
     love.graphics.setShader()
     if world.game_state == "menu" then
-        local text = "Press Enter to start"
+        local text = "Press Enter to start / P to resume"
         love.graphics.setFont(regularTexte)
         love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (4 / 5))
 
@@ -348,51 +478,24 @@ function love.draw()
     elseif world.game_state == "intro" then
         local text = "after a long shift your trying to go to the rest room but your a bit lost . . ."
         love.graphics.setFont(regularTexte)
-        love.graphics.printf(text, 80, 400, 900, 'left')
-        -- love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (1 / 5))
+        love.graphics.printf(text, 80, 450, 900, 'left')
+
     elseif world.game_state == "running" then
         if world.swictch_screen_delay > 0 then
             renderSystem()
         end
     elseif world.game_state == "paused" then
         print("paused")
-        local text = "Press P to resume"
-        -- you didn't reach your goal yet you'll be able to rest theyre
+        local text = "You didn't reach you goal yet, you'll have time to rest there"
         love.graphics.setFont(regularTexte)
-        love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (4 / 5))
+        love.graphics.printf(text, 80, 650, 800, 'center')
 
         text = "Pause"
         love.graphics.setFont(tittleTexte)
         love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (2 / 5))
     elseif world.game_state == "end" and world.swictch_screen_delay > 0.3 then
-        local text = "well done you finaly reach the rest room you now can truly enjoy your break"
+        local text = "well done you finaly reach the rest room, you now can truly enjoy your break"
         love.graphics.setFont(regularTexte)
-        love.graphics.printf(text, 80, 400, 900, 'left')
-        -- love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (1 / 5))
+        love.graphics.printf(text, 80, 475, 900, 'left')
     end
 end
-
--- systeme de colision et plateforme
-
--- ecran titre -> Rest Room
--- faire une intro ecrite -> After a long shift your trying to go to the rest room but your a bit lost
---
--- niveau aléatoire intéressants
--- faire un menu pause -> p mets en pause avec un menue clean
---
--- fin ecrite ou scenete -> you finally find the rest room and can take your well-deserved break
--- transition entre les niveaux -> switch entre niveau (changement du fond -> ascenseur qui s'ouvre et se ferme et transition ou on demander un étage)
--- definition du nombre de niveau à faire pour finir -> switch début fin
-
--- détection de la fin du niveau
---
--- ajustement des sp
-
--- si tu sors de l'écran resset au début du niveau
-
-
--- i tried shader transition but failled
-
-
--- plusieur niveau
--- si sortie de l'écran retour spawn
