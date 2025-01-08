@@ -19,7 +19,7 @@ function load_music()
 end
 
 function love.load()
-    love.window.setTitle("LOVE2D GAME")
+    love.window.setTitle("REST ROOM")
     love.window.setMode(1000, 1000, { resizable = false })
     regularTexte = love.graphics.setNewFont("assets/fonts/PixelifySans-Regular.ttf", 40)
     tittleTexte = love.graphics.setNewFont("assets/fonts/PixelifySans-Bold.ttf", 100)
