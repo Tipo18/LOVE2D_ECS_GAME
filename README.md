@@ -21,6 +21,11 @@ and also i wanted to make a level generator build on the level plateform and wal
 The ECS way of developping seems cool, it's a smart way to develop game i think
 My few bad return on this project was getting stuck in some places because of clock and trying to get instances destroyed but next time i'll be able to tackle them out more quicklky
 
+## Visual
+![Capture d’écran du 2025-01-09 00-04-32](https://github.com/user-attachments/assets/fb1205d4-2870-4bdc-b881-1d31e3a8e171)
+
+
+
 ## To run the game
 You should clone the repo and then run "love ." from the folder in the cmd (with love installed)
 
