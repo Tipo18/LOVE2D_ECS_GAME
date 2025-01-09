@@ -7,8 +7,8 @@ vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords)
 // #define colour_1 vec4(0.85,0.2,0.2,1.0)
 // #define colour_3 vec4(0.0,0.0,0.0,1.0)
 
-#define colour_1 vec4(0.4,0.4,0.4,1.0)
-#define colour_2 vec4(0.9,0.9,0.9,1.0)
+#define colour_1 vec4(0.4,0.2,0.4,1.0)
+#define colour_2 vec4(1.0,1.0,1.0,1.0)
 #define colour_3 vec4(0.0,0.0,0.0,1.0)
 
 #define spin_amount 1

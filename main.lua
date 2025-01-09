@@ -81,8 +81,8 @@ local function init1()
     table.insert(entities,
         { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xvelocity = true, yvelocity = true, xsize = true, ysize = true, onground = true, coyotetimer = true, })
     table.insert(components,
-        { xpos = 20 + 120 / 2 - 68 / 2 -4, ypos = 1000 - 64, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
-    startx = 20 + 120 / 2 - 68 / 2 -4
+        { xpos = 20 + 120 / 2 - 68 / 2 - 4, ypos = 1000 - 64, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
+    startx = 20 + 120 / 2 - 68 / 2 - 4
     starty = 1000 - 64
     it_index = it_index + 1
     -- spawn
@@ -143,8 +143,8 @@ local function init2()
     table.insert(entities,
         { index = it_index, player = true, spawn = false, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xvelocity = true, yvelocity = true, xsize = true, ysize = true, onground = true, coyotetimer = true, })
     table.insert(components,
-        { xpos = 20 + 120 / 2 - 68 / 2 -4, ypos = (3 - 1) * (120 + 20) - 64, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
-    startx = 20 + 120 / 2 - 68 / 2 -4
+        { xpos = 20 + 120 / 2 - 68 / 2 - 4, ypos = (3 - 1) * (120 + 20) - 64, xsize = 64, ysize = 64, xvelocity = 250, yvelocity = 0, isonground = true, coyotetimer = 0 })
+    startx = 20 + 120 / 2 - 68 / 2 - 4
     starty = (3 - 1) * (120 + 20) - 64
     it_index = it_index + 1
     -- spawn
@@ -155,7 +155,8 @@ local function init2()
     -- end_door
     table.insert(entities,
         { index = it_index, player = false, spawn = false, end_door = true, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 20 + 140 * 6 + 120 / 2 - 68 / 2, ypos = (6 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
+    table.insert(components,
+        { xpos = 20 + 140 * 6 + 120 / 2 - 68 / 2, ypos = (6 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
     it_index = it_index + 1
 
     local plateforme =
@@ -212,12 +213,14 @@ local function init3()
     -- spawn
     table.insert(entities,
         { index = it_index, player = false, spawn = true, end_door = false, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 20 + (140) * 6 + 120 / 2 - 68 / 2, ypos = (8 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
+    table.insert(components,
+        { xpos = 20 + (140) * 6 + 120 / 2 - 68 / 2, ypos = (8 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
     it_index = it_index + 1
     -- end_door
     table.insert(entities,
         { index = it_index, player = false, spawn = false, end_door = true, platforme = false, wall = false, display = true, xpos = true, ypos = true, xsize = true, ysize = true })
-    table.insert(components, { xpos = 20 + 140 * 5 + 120 / 2 - 68 / 2, ypos = (2 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
+    table.insert(components,
+        { xpos = 20 + 140 * 5 + 120 / 2 - 68 / 2, ypos = (2 - 1) * (120 + 20) - 80, xsize = 68, ysize = 80 })
     it_index = it_index + 1
 
     local plateforme =
@@ -476,10 +479,9 @@ function love.draw()
         love.graphics.setFont(tittleTexte)
         love.graphics.print(text, width / 2 - love.graphics.getFont():getWidth(text) / 2, height * (2 / 5))
     elseif world.game_state == "intro" then
-        local text = "after a long shift your trying to go to the rest room but your a bit lost . . ."
+        local text = "after a long shift you're trying to go to the rest room but your a bit lost . . ."
         love.graphics.setFont(regularTexte)
         love.graphics.printf(text, 80, 450, 900, 'left')
-
     elseif world.game_state == "running" then
         if world.swictch_screen_delay > 0 then
             renderSystem()
