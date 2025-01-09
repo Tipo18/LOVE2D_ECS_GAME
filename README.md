@@ -22,8 +22,8 @@ The ECS way of developping seems cool, it's a smart way to develop game i think
 My few bad return on this project was getting stuck in some places because of clock and trying to get instances destroyed but next time i'll be able to tackle them out more quicklky
 
 ## Visual
-![Capture d’écran du 2025-01-09 00-04-32](https://github.com/user-attachments/assets/fb1205d4-2870-4bdc-b881-1d31e3a8e171)
 
+![Capture d’écran du 2025-01-09 11-55-10](https://github.com/user-attachments/assets/468c0be8-c9b4-4fb6-a66f-e4efdcebb67b)
 
 
 ## To run the game
