@@ -21,6 +21,10 @@ and also i wanted to make a level generator build on the level plateform and wal
 The ECS way of developping seems cool, it's a smart way to develop game i think
 My few bad return on this project was getting stuck in some places because of clock and trying to get instances destroyed but next time i'll be able to tackle them out more quicklky
 
+## Commands
+To play the game you should press enter on page with texte to go to the next one
+space to jump and <- -> to move
+
 ## Visual
 
 ![Capture d’écran du 2025-01-09 11-55-10](https://github.com/user-attachments/assets/468c0be8-c9b4-4fb6-a66f-e4efdcebb67b)
